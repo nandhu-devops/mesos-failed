@@ -1,0 +1,110 @@
+--- 
+   #apt_key:
+   #        keyserver: hkp://keyserver.ubuntu.com:80
+   #        id: E56151BF
+
+ #- name: define the type in a variable
+ #raw: DISTRO=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
+
+ #- name: define the type in a variable
+ #raw: CODENAME=$(lsb_release -cs)
+
+
+ - name: create  a directory to download the dependencies
+   file:
+           path: /home/ubuntu/Downloads/mesos
+           state: directory
+           mode: '0755'
+
+ - name: install required packages
+   apt:
+           name: "{{ item }}"
+           update_cache: true
+           state: present
+   with_items:
+           - 'build-essential' 
+           - 'python-dev' 
+           - 'libcurl4-nss-dev' 
+           - 'libsasl2-dev' 
+           - 'libsasl2-modules' 
+           - 'maven'
+           - 'libapr1-dev' 
+           - 'libsvn-dev' 
+           - 'zlib1g-dev'
+           - 'libevent-dev'
+
+ - name: download libevent-2.0-5
+   get_url:
+           url: http://security.ubuntu.com/ubuntu/pool/main/libe/libevent/libevent-2.0-5_2.0.21-stable-2ubuntu0.16.04.1_amd64.deb
+           dest: /home/ubuntu/Downloads/mesos/libevent-2.0-5.deb
+
+ - name: install the libevent package
+   apt:
+           deb: '/home/ubuntu/Downloads/mesos/libevent-2.0-5.deb'
+           state: installed
+
+ - name: update the system
+   apt:
+           update_cache: yes
+
+ - name: download libevent-core
+   get_url:
+           url: http://security.ubuntu.com/ubuntu/pool/main/libe/libevent/libevent-core-2.0-5_2.0.21-stable-2ubuntu0.16.04.1_amd64.deb
+           dest: /home/ubuntu/Downloads/mesos/libevent-core.deb
+
+ - name: install the libevent-core package
+   apt:
+           deb: '/home/ubuntu/Downloads/mesos/libevent-core.deb'
+           state: installed
+
+ - name: update the system
+   apt:
+           update_cache: yes
+
+ - name: download libevent-openssl
+   get_url:
+           url: http://security.ubuntu.com/ubuntu/pool/main/libe/libevent/libevent-openssl-2.0-5_2.0.21-stable-2ubuntu0.16.04.1_amd64.deb
+           dest: /home/ubuntu/Downloads/mesos/libevent-openssl.deb
+
+ - name: install the debian package
+   apt:
+           deb: '/home/ubuntu/Downloads/mesos/libevent-openssl.deb'
+           state: installed
+
+ - name: update the system
+   apt:
+           update_cache: yes
+
+ - name: download libevent-pthreads
+   get_url:
+           url: http://security.ubuntu.com/ubuntu/pool/main/libe/libevent/libevent-pthreads-2.0-5_2.0.21-stable-2ubuntu0.16.04.1_amd64.deb
+           dest: /home/ubuntu/Downloads/mesos/libevent-pthreads.deb
+
+ - name: install the libevent-pthreads package
+   apt:
+           deb: '/home/ubuntu/Downloads/mesos/libevent-pthreads.deb'
+           state: installed
+
+ - name: update the system
+   apt:
+           update_cache: yes
+
+ - name: add key for mesos installation
+   shell: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E56151BF
+
+ - name: update the system
+   apt:
+           update_cache: yes
+   
+ - name: add the repository to source.list.d
+   shell: 'echo "deb http://repos.mesosphere.io/ubuntu `lsb_release -cs` main"| sudo tee /etc/apt/sources.list.d/mesosphere.list'
+
+ - name: update the system
+   apt:
+           update_cache: yes
+
+ - name: install mesos and marathon
+   apt:
+           name: "{{ item }}"
+   with_items:
+           - 'mesos=1.0.1*'
